@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NearBites — Restaurant</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🍽️</span>
+                <span>NearBites</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="preferences.html">Preferences</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Restaurant hero -->
+    <section class="restaurant-hero" id="restaurant-hero">
+        <div class="container">
+            <a href="javascript:history.back()" class="btn btn-sm btn-secondary mb-16">← Back to results</a>
+            <div class="skeleton skeleton-text" style="height:32px;width:50%;margin-bottom:12px" id="hero-skeleton"></div>
+        </div>
+    </section>
+
+    <div class="container section">
+        <div class="page-layout">
+            <main class="page-main">
+                <!-- Budget summary -->
+                <div class="flex items-center justify-between mb-16" id="budget-summary" style="display:none">
+                    <span class="badge badge-budget" id="dishes-count-badge"></span>
+                    <span class="text-secondary" style="font-size:0.9rem">Budget: <strong id="budget-label">₹500</strong></span>
+                </div>
+
+                <!-- Menu -->
+                <div id="menu-container">
+                    <div class="skeleton" style="height:40px;margin-bottom:16px"></div>
+                    <div class="skeleton" style="height:200px;margin-bottom:16px"></div>
+                    <div class="skeleton" style="height:40px;margin-bottom:16px"></div>
+                    <div class="skeleton" style="height:200px"></div>
+                </div>
+
+                <div class="empty-state hidden" id="empty-menu">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>No menu available</h3>
+                    <p>Menu data is not available for this restaurant yet.</p>
+                </div>
+
+                <!-- Reviews Section -->
+                <div class="section" id="reviews-section" style="margin-top:32px">
+                    <div class="flex items-center justify-between mb-16">
+                        <h2 class="section-title" style="margin-bottom:0">Reviews</h2>
+                        <span class="text-secondary" id="review-summary"></span>
+                    </div>
+
+                    <!-- Write Review Form -->
+                    <div class="card" style="margin-bottom:24px;padding:20px" id="review-form-card">
+                        <h3 style="font-size:1rem;margin-bottom:12px">Write a Review</h3>
+                        <div class="form-group">
+                            <label class="form-label">Your Name</label>
+                            <input type="text" id="review-name" class="form-input" placeholder="Enter your name" maxlength="100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Rating</label>
+                            <div class="star-rating" id="star-rating">
+                                <span class="star" data-rating="1">☆</span>
+                                <span class="star" data-rating="2">☆</span>
+                                <span class="star" data-rating="3">☆</span>
+                                <span class="star" data-rating="4">☆</span>
+                                <span class="star" data-rating="5">☆</span>
+                            </div>
+                            <input type="hidden" id="review-rating" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Your Review</label>
+                            <textarea id="review-comment" class="form-input" rows="3" placeholder="Share your experience..." maxlength="1000" style="resize:vertical"></textarea>
+                        </div>
+                        <button class="btn btn-primary" id="submit-review-btn">Submit Review</button>
+                        <p class="text-secondary" id="review-error" style="font-size:0.85rem;margin-top:8px;color:var(--error);display:none"></p>
+                    </div>
+
+                    <!-- Reviews List -->
+                    <div id="reviews-list">
+                        <div class="skeleton" style="height:100px;margin-bottom:12px"></div>
+                        <div class="skeleton" style="height:100px;margin-bottom:12px"></div>
+                    </div>
+                    <div class="empty-state hidden" id="empty-reviews" style="padding:32px">
+                        <div class="empty-state-icon" style="font-size:2.5rem">💬</div>
+                        <h3>No reviews yet</h3>
+                        <p>Be the first to review this restaurant!</p>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Map sidebar -->
+            <aside style="width:100%;max-width:350px;flex-shrink:0" id="map-sidebar">
+                <div class="map-container map-container-sm" id="restaurant-map"></div>
+                <div id="restaurant-info" style="margin-top:16px">
+                    <div class="skeleton skeleton-text"></div>
+                    <div class="skeleton skeleton-text-sm"></div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script type="module">
+        import { fetchRestaurantDetail, fetchReviews, submitReview } from './js/api.js';
+        import { initializeMap, showSingleMarker } from './js/map.js';
+
+        const params = new URLSearchParams(window.location.search);
+        const placeId = params.get("place_id");
+        const budget = parseInt(params.get("budget")) || 2000;
+
+        if (!placeId) {
+            window.location.href = "index.html";
+        }
+
+        async function loadRestaurant() {
+            const data = await fetchRestaurantDetail(placeId, budget);
+
+            if (!data || data.error) {
+                document.getElementById("menu-container").innerHTML = "";
+                document.getElementById("empty-menu").classList.remove("hidden");
+                document.getElementById("hero-skeleton").textContent = "Restaurant not found";
+                return;
+            }
+
+            const r = data.restaurant;
+            document.title = `NearBites — ${r.name}`;
+
+            // Hero
+            const heroEl = document.getElementById("restaurant-hero");
+            const cuisineTags = (r.cuisine_tags || [])
+                .map(t => `<span class="tag tag-cuisine">${t}</span>`).join(" ");
+            const priceSymbols = Array(r.price_level || 1).fill('<span class="active-price">₹</span>').join("") +
+                Array(Math.max(0, 4 - (r.price_level || 1))).fill("₹").join("");
+
+            document.getElementById("hero-skeleton").remove();
+            heroEl.querySelector(".container").innerHTML += `
+                <h1>${r.name}</h1>
+                <div class="restaurant-meta">
+                    <span class="rating"><span class="rating-star">★</span> ${r.rating || "N/A"}</span>
+                    <span class="price-level">${priceSymbols}</span>
+                    <span class="badge ${r.is_open !== false ? 'badge-open' : 'badge-closed'}">${r.is_open !== false ? 'Open' : 'Closed'}</span>
+                </div>
+                <div style="margin-top:8px">${cuisineTags}</div>
+            `;
+
+            // Restaurant info sidebar
+            document.getElementById("restaurant-info").innerHTML = `
+                <p style="font-weight:600">${r.name}</p>
+                <p class="text-secondary" style="font-size:0.85rem;margin-top:4px">${r.address || "Address not available"}</p>
+                ${r.phone ? `<p style="font-size:0.85rem;margin-top:4px">📞 <a href="tel:${r.phone}">${r.phone}</a></p>` : ""}
+            `;
+
+            // Budget summary
+            document.getElementById("budget-summary").style.display = "flex";
+            document.getElementById("budget-label").textContent = `₹${budget}`;
+            document.getElementById("dishes-count-badge").textContent =
+                `${data.dishes_within_budget} of ${data.total_dishes} dishes within budget`;
+
+            // Menu
+            const menu = data.menu || {};
+            const menuContainer = document.getElementById("menu-container");
+
+            if (Object.keys(menu).length === 0) {
+                menuContainer.innerHTML = "";
+                document.getElementById("empty-menu").classList.remove("hidden");
+                return;
+            }
+
+            menuContainer.innerHTML = Object.entries(menu).map(([category, dishes]) => `
+                <div class="menu-section">
+                    <h3>${category} <span class="text-secondary" style="font-size:0.85rem;font-weight:400">(${dishes.length})</span></h3>
+                    ${dishes.map(d => `
+                        <div class="menu-item ${d.within_budget ? '' : 'over-budget'}">
+                            <div class="menu-item-info">
+                                <div class="menu-item-name">
+                                    <span class="dot ${d.is_veg ? (d.is_vegan ? 'dot-vegan' : 'dot-veg') : 'dot-nonveg'}"></span>
+                                    ${d.name}
+                                    ${!d.within_budget ? '<span class="badge badge-over-budget" style="margin-left:8px">Over budget</span>' : ''}
+                                </div>
+                                <div class="menu-item-desc">${d.description || ""}</div>
+                            </div>
+                            <div class="menu-item-price ${d.within_budget ? 'text-primary' : ''}">₹${d.price}</div>
+                        </div>
+                    `).join("")}
+                </div>
+            `).join("");
+
+            // Map
+            if (r.lat && r.lng) {
+                const map = await initializeMap("restaurant-map", { lat: r.lat, lng: r.lng }, 16);
+                if (map) showSingleMarker(map, r.lat, r.lng, r.name);
+            }
+        }
+
+        // --- Reviews ---
+        let selectedRating = 0;
+
+        // Star rating interaction
+        document.querySelectorAll("#star-rating .star").forEach(star => {
+            star.addEventListener("click", () => {
+                selectedRating = parseInt(star.dataset.rating);
+                document.getElementById("review-rating").value = selectedRating;
+                document.querySelectorAll("#star-rating .star").forEach(s => {
+                    s.textContent = parseInt(s.dataset.rating) <= selectedRating ? "★" : "☆";
+                    s.style.color = parseInt(s.dataset.rating) <= selectedRating ? "#FFC107" : "#CCC";
+                });
+            });
+            star.addEventListener("mouseenter", () => {
+                const hoverVal = parseInt(star.dataset.rating);
+                document.querySelectorAll("#star-rating .star").forEach(s => {
+                    s.textContent = parseInt(s.dataset.rating) <= hoverVal ? "★" : "☆";
+                    s.style.color = parseInt(s.dataset.rating) <= hoverVal ? "#FFC107" : "#CCC";
+                });
+            });
+        });
+        document.getElementById("star-rating").addEventListener("mouseleave", () => {
+            document.querySelectorAll("#star-rating .star").forEach(s => {
+                s.textContent = parseInt(s.dataset.rating) <= selectedRating ? "★" : "☆";
+                s.style.color = parseInt(s.dataset.rating) <= selectedRating ? "#FFC107" : "#CCC";
+            });
+        });
+
+        function renderReviews(data) {
+            const list = document.getElementById("reviews-list");
+            const empty = document.getElementById("empty-reviews");
+            const summary = document.getElementById("review-summary");
+
+            if (data.count > 0) {
+                summary.innerHTML = `<span class="rating"><span class="rating-star">★</span> ${data.average_rating}</span> · ${data.count} review${data.count !== 1 ? "s" : ""}`;
+                empty.classList.add("hidden");
+                list.innerHTML = data.reviews.map(r => {
+                    const stars = "★".repeat(r.rating) + "☆".repeat(5 - r.rating);
+                    const date = new Date(r.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+                    return `
+                        <div class="card" style="padding:16px;margin-bottom:12px">
+                            <div class="flex items-center justify-between" style="margin-bottom:8px">
+                                <strong style="font-size:0.95rem">${r.reviewer_name}</strong>
+                                <span class="text-secondary" style="font-size:0.8rem">${date}</span>
+                            </div>
+                            <div style="color:#FFC107;font-size:1.1rem;margin-bottom:6px">${stars}</div>
+                            ${r.comment ? `<p style="font-size:0.9rem;color:var(--text-secondary)">${r.comment}</p>` : ""}
+                        </div>
+                    `;
+                }).join("");
+            } else {
+                list.innerHTML = "";
+                empty.classList.remove("hidden");
+                summary.textContent = "No reviews yet";
+            }
+        }
+
+        async function loadReviews() {
+            const data = await fetchReviews(placeId);
+            renderReviews(data);
+        }
+
+        // Submit review
+        document.getElementById("submit-review-btn").addEventListener("click", async () => {
+            const name = document.getElementById("review-name").value.trim();
+            const comment = document.getElementById("review-comment").value.trim();
+            const errorEl = document.getElementById("review-error");
+
+            if (!name) {
+                errorEl.textContent = "Please enter your name.";
+                errorEl.style.display = "block";
+                return;
+            }
+            if (selectedRating === 0) {
+                errorEl.textContent = "Please select a rating.";
+                errorEl.style.display = "block";
+                return;
+            }
+
+            errorEl.style.display = "none";
+            const btn = document.getElementById("submit-review-btn");
+            btn.disabled = true;
+            btn.textContent = "Submitting...";
+
+            const result = await submitReview(placeId, {
+                reviewer_name: name,
+                rating: selectedRating,
+                comment: comment,
+            });
+
+            btn.disabled = false;
+            btn.textContent = "Submit Review";
+
+            if (result && result.review) {
+                // Clear form
+                document.getElementById("review-name").value = "";
+                document.getElementById("review-comment").value = "";
+                selectedRating = 0;
+                document.querySelectorAll("#star-rating .star").forEach(s => {
+                    s.textContent = "☆";
+                    s.style.color = "#CCC";
+                });
+                // Reload reviews
+                loadReviews();
+            } else {
+                errorEl.textContent = "Failed to submit review. Please try again.";
+                errorEl.style.display = "block";
+            }
+        });
+
+        loadRestaurant();
+        loadReviews();
+    </script>
+</body>
+</html>

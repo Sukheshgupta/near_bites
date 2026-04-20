@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NearBites — Find Food Near You</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🍽️</span>
+                <span>NearBites</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="preferences.html">Preferences</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Find food near you,<br>within your budget</h1>
+            <p>Discover restaurants and dishes you'll love — at prices you can afford.</p>
+
+            <!-- Location -->
+            <div class="form-group" style="max-width:500px;margin:0 auto">
+                <div class="location-input-group">
+                    <input type="text" id="location-input" class="form-input" placeholder="Enter your location...">
+                    <button class="btn btn-primary" id="detect-location-btn" title="Detect my location">
+                        📍 Detect
+                    </button>
+                </div>
+                <p id="location-status" class="text-secondary" style="font-size:0.85rem;margin-top:6px"></p>
+            </div>
+
+            <!-- Budget Slider -->
+            <div class="form-group" style="max-width:500px;margin:24px auto 0">
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span class="form-label">Budget per dish</span>
+                        <span class="slider-value" id="budget-display">₹500</span>
+                    </div>
+                    <input type="range" id="budget-slider" min="50" max="2000" step="50" value="500">
+                    <div class="slider-label text-secondary" style="font-size:0.8rem">
+                        <span>₹50</span>
+                        <span>₹2000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Filters -->
+            <div class="form-group" style="max-width:600px;margin:24px auto 0">
+                <p class="form-label text-center">Quick Filters</p>
+                <div class="chip-group" style="justify-content:center">
+                    <button class="chip" data-filter="dietary" data-value="veg">
+                        <span class="dot dot-veg" style="margin-right:4px"></span> Veg
+                    </button>
+                    <button class="chip" data-filter="dietary" data-value="non-veg">
+                        <span class="dot dot-nonveg" style="margin-right:4px"></span> Non-Veg
+                    </button>
+                    <button class="chip" data-filter="dietary" data-value="vegan">
+                        <span class="dot dot-veg" style="margin-right:4px"></span> Vegan
+                    </button>
+                    <button class="chip" data-filter="open_now" data-value="true">
+                        🕐 Open Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cuisine Selection -->
+            <div class="form-group" style="max-width:700px;margin:24px auto 0">
+                <p class="form-label text-center">Cuisines</p>
+                <div class="chip-group" style="justify-content:center">
+                    <button class="chip" data-cuisine="south-indian">South Indian</button>
+                    <button class="chip" data-cuisine="north-indian">North Indian</button>
+                    <button class="chip" data-cuisine="chinese">Chinese</button>
+                    <button class="chip" data-cuisine="biryani">Biryani</button>
+                    <button class="chip" data-cuisine="italian">Italian</button>
+                    <button class="chip" data-cuisine="cafe">Cafe</button>
+                    <button class="chip" data-cuisine="vegan">Vegan</button>
+                    <button class="chip" data-cuisine="kerala">Kerala</button>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div style="margin-top:32px">
+                <button class="btn btn-primary btn-lg" id="find-food-btn">
+                    🔍 Find Food
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <footer style="text-align:center;padding:32px 16px;color:var(--text-secondary);font-size:0.85rem">
+        <p>NearBites — Discover affordable food near you</p>
+    </footer>
+
+    <script type="module">
+        import { getPreferences } from './js/preferences.js';
+        import { initAutocomplete, loadGoogleMaps } from './js/map.js';
+
+        let selectedLat = null;
+        let selectedLng = null;
+        let selectedAddress = "";
+
+        // Load preferences as defaults
+        const prefs = getPreferences();
+        const budgetSlider = document.getElementById("budget-slider");
+        const budgetDisplay = document.getElementById("budget-display");
+        budgetSlider.value = prefs.defaultBudget;
+        budgetDisplay.textContent = `₹${prefs.defaultBudget}`;
+
+        // Pre-select dietary from preferences
+        if (prefs.defaultDietary) {
+            document.querySelectorAll('[data-filter="dietary"]').forEach(chip => {
+                if (chip.dataset.value === prefs.defaultDietary) {
+                    chip.classList.add("active");
+                }
+            });
+        }
+
+        // Pre-select cuisines from preferences
+        if (prefs.defaultCuisines && prefs.defaultCuisines.length) {
+            document.querySelectorAll('[data-cuisine]').forEach(chip => {
+                if (prefs.defaultCuisines.includes(chip.dataset.cuisine)) {
+                    chip.classList.add("active");
+                }
+            });
+        }
+
+        // Budget slider live update
+        budgetSlider.addEventListener("input", () => {
+            budgetDisplay.textContent = `₹${budgetSlider.value}`;
+        });
+
+        // Quick filter chips — dietary (single select)
+        document.querySelectorAll('[data-filter="dietary"]').forEach(chip => {
+            chip.addEventListener("click", () => {
+                const wasActive = chip.classList.contains("active");
+                document.querySelectorAll('[data-filter="dietary"]').forEach(c => c.classList.remove("active"));
+                if (!wasActive) chip.classList.add("active");
+            });
+        });
+
+        // Open now chip (toggle)
+        document.querySelectorAll('[data-filter="open_now"]').forEach(chip => {
+            chip.addEventListener("click", () => {
+                chip.classList.toggle("active");
+            });
+        });
+
+        // Cuisine chips (multi select)
+        document.querySelectorAll("[data-cuisine]").forEach(chip => {
+            chip.addEventListener("click", () => {
+                chip.classList.toggle("active");
+            });
+        });
+
+        // Detect location
+        document.getElementById("detect-location-btn").addEventListener("click", () => {
+            const status = document.getElementById("location-status");
+            if (!navigator.geolocation) {
+                status.textContent = "Geolocation not supported by your browser.";
+                return;
+            }
+            status.textContent = "Detecting location...";
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    selectedLat = pos.coords.latitude;
+                    selectedLng = pos.coords.longitude;
+                    selectedAddress = `${selectedLat.toFixed(4)}, ${selectedLng.toFixed(4)}`;
+                    document.getElementById("location-input").value = "Current Location";
+                    status.textContent = `Location detected: ${selectedAddress}`;
+                    status.style.color = "var(--veg)";
+                },
+                err => {
+                    status.textContent = "Could not detect location. Please enter manually.";
+                    status.style.color = "var(--non-veg)";
+                }
+            );
+        });
+
+        // Google Places Autocomplete
+        loadGoogleMaps().then(() => {
+            if (typeof google !== "undefined") {
+                initAutocomplete("location-input").then(result => {
+                    selectedLat = result.lat;
+                    selectedLng = result.lng;
+                    selectedAddress = result.address;
+                    document.getElementById("location-status").textContent = `📍 ${result.address}`;
+                    document.getElementById("location-status").style.color = "var(--veg)";
+                });
+            }
+        });
+
+        // Find Food button
+        document.getElementById("find-food-btn").addEventListener("click", () => {
+            // Default to Chennai center if no location selected
+            const lat = selectedLat || 13.0827;
+            const lng = selectedLng || 80.2707;
+            const budget = budgetSlider.value;
+
+            const params = new URLSearchParams();
+            params.set("lat", lat);
+            params.set("lng", lng);
+            params.set("budget", budget);
+            params.set("radius", prefs.defaultRadius || 15000);
+
+            if (selectedAddress) {
+                params.set("location_name", selectedAddress);
+            }
+
+            // Dietary
+            const activeDietary = document.querySelector('[data-filter="dietary"].active');
+            if (activeDietary) params.set("dietary", activeDietary.dataset.value);
+
+            // Open now
+            const openNow = document.querySelector('[data-filter="open_now"].active');
+            if (openNow) params.set("open_now", "true");
+
+            // Cuisines
+            const activeCuisines = Array.from(document.querySelectorAll("[data-cuisine].active"))
+                .map(c => c.dataset.cuisine);
+            if (activeCuisines.length) params.set("cuisine", activeCuisines.join(","));
+
+            window.location.href = `results.html?${params.toString()}`;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NearBites — Preferences</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🍽️</span>
+                <span>NearBites</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="preferences.html" class="active">Preferences</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container section">
+        <h1 style="font-size:1.6rem;margin-bottom:8px">Your Preferences</h1>
+        <p class="text-secondary mb-24">These defaults will be applied whenever you search for food.</p>
+
+        <div style="max-width:600px">
+            <!-- Dietary Preference -->
+            <div class="form-group">
+                <p class="form-label">Dietary Preference</p>
+                <div class="radio-group" id="dietary-options">
+                    <label class="radio-label">
+                        <input type="radio" name="dietary" value="">
+                        <span>No Preference</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="dietary" value="veg">
+                        <span><span class="dot dot-veg"></span> Vegetarian</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="dietary" value="non-veg">
+                        <span><span class="dot dot-nonveg"></span> Non-Vegetarian</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="dietary" value="vegan">
+                        <span><span class="dot dot-veg"></span> Vegan</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="dietary" value="jain">
+                        <span>Jain</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Allergens -->
+            <div class="form-group">
+                <p class="form-label">Allergens to Avoid</p>
+                <div class="checkbox-group" id="allergen-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="allergens" value="nuts">
+                        <span>🥜 Nuts</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="allergens" value="dairy">
+                        <span>🥛 Dairy</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="allergens" value="gluten">
+                        <span>🌾 Gluten</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="allergens" value="eggs">
+                        <span>🥚 Eggs</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Spice Level -->
+            <div class="form-group">
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span class="form-label">Spice Level</span>
+                        <span class="slider-value" id="spice-display">3 — Medium</span>
+                    </div>
+                    <input type="range" id="spice-slider" min="1" max="5" step="1" value="3">
+                    <div class="slider-label text-secondary" style="font-size:0.8rem">
+                        <span>Mild</span>
+                        <span>Extra Hot 🔥</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cuisine Preferences -->
+            <div class="form-group">
+                <p class="form-label">Preferred Cuisines</p>
+                <div class="chip-group" id="cuisine-options">
+                    <button type="button" class="chip" data-cuisine="south-indian">South Indian</button>
+                    <button type="button" class="chip" data-cuisine="north-indian">North Indian</button>
+                    <button type="button" class="chip" data-cuisine="chinese">Chinese</button>
+                    <button type="button" class="chip" data-cuisine="biryani">Biryani</button>
+                    <button type="button" class="chip" data-cuisine="italian">Italian</button>
+                    <button type="button" class="chip" data-cuisine="continental">Continental</button>
+                    <button type="button" class="chip" data-cuisine="cafe">Cafe</button>
+                    <button type="button" class="chip" data-cuisine="vegan">Vegan</button>
+                    <button type="button" class="chip" data-cuisine="kerala">Kerala</button>
+                    <button type="button" class="chip" data-cuisine="mughlai">Mughlai</button>
+                </div>
+            </div>
+
+            <!-- Default Budget -->
+            <div class="form-group">
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span class="form-label">Default Budget</span>
+                        <span class="slider-value" id="budget-display">₹500</span>
+                    </div>
+                    <input type="range" id="budget-slider" min="50" max="2000" step="50" value="500">
+                    <div class="slider-label text-secondary" style="font-size:0.8rem">
+                        <span>₹50</span>
+                        <span>₹2000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Default Radius -->
+            <div class="form-group">
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span class="form-label">Default Search Radius</span>
+                        <span class="slider-value" id="radius-display">5.0 km</span>
+                    </div>
+                    <input type="range" id="radius-slider" min="1000" max="15000" step="500" value="5000">
+                    <div class="slider-label text-secondary" style="font-size:0.8rem">
+                        <span>1 km</span>
+                        <span>15 km</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-16 mt-24">
+                <button class="btn btn-primary" id="save-btn">Save Preferences</button>
+                <button class="btn btn-secondary" id="reset-btn">Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { getPreferences, savePreferences, resetPreferences, showToast } from './js/preferences.js';
+
+        const spiceLabels = { 1: "Mild", 2: "Mild-Medium", 3: "Medium", 4: "Hot", 5: "Extra Hot 🔥" };
+
+        function loadForm() {
+            const prefs = getPreferences();
+
+            // Dietary
+            const dietaryRadio = document.querySelector(`input[name="dietary"][value="${prefs.defaultDietary || ""}"]`);
+            if (dietaryRadio) dietaryRadio.checked = true;
+
+            // Allergens
+            (prefs.allergens || []).forEach(a => {
+                const cb = document.querySelector(`input[name="allergens"][value="${a}"]`);
+                if (cb) cb.checked = true;
+            });
+
+            // Spice
+            const spiceSlider = document.getElementById("spice-slider");
+            spiceSlider.value = prefs.spiceLevel || 3;
+            document.getElementById("spice-display").textContent = `${spiceSlider.value} — ${spiceLabels[spiceSlider.value]}`;
+
+            // Cuisines
+            (prefs.defaultCuisines || []).forEach(c => {
+                const chip = document.querySelector(`[data-cuisine="${c}"]`);
+                if (chip) chip.classList.add("active");
+            });
+
+            // Budget
+            const budgetSlider = document.getElementById("budget-slider");
+            budgetSlider.value = prefs.defaultBudget || 500;
+            document.getElementById("budget-display").textContent = `₹${budgetSlider.value}`;
+
+            // Radius
+            const radiusSlider = document.getElementById("radius-slider");
+            radiusSlider.value = prefs.defaultRadius || 5000;
+            document.getElementById("radius-display").textContent = `${(radiusSlider.value / 1000).toFixed(1)} km`;
+        }
+
+        function getFormValues() {
+            const dietary = document.querySelector('input[name="dietary"]:checked');
+            const allergens = Array.from(document.querySelectorAll('input[name="allergens"]:checked'))
+                .map(cb => cb.value);
+            const cuisines = Array.from(document.querySelectorAll('[data-cuisine].active'))
+                .map(c => c.dataset.cuisine);
+
+            return {
+                defaultDietary: dietary ? dietary.value : "",
+                allergens,
+                spiceLevel: parseInt(document.getElementById("spice-slider").value),
+                defaultCuisines: cuisines,
+                defaultBudget: parseInt(document.getElementById("budget-slider").value),
+                defaultRadius: parseInt(document.getElementById("radius-slider").value),
+            };
+        }
+
+        // Spice slider live update
+        document.getElementById("spice-slider").addEventListener("input", (e) => {
+            document.getElementById("spice-display").textContent = `${e.target.value} — ${spiceLabels[e.target.value]}`;
+        });
+
+        // Budget slider live update
+        document.getElementById("budget-slider").addEventListener("input", (e) => {
+            document.getElementById("budget-display").textContent = `₹${e.target.value}`;
+        });
+
+        // Radius slider live update
+        document.getElementById("radius-slider").addEventListener("input", (e) => {
+            document.getElementById("radius-display").textContent = `${(e.target.value / 1000).toFixed(1)} km`;
+        });
+
+        // Cuisine chips toggle
+        document.querySelectorAll("[data-cuisine]").forEach(chip => {
+            chip.addEventListener("click", () => chip.classList.toggle("active"));
+        });
+
+        // Save
+        document.getElementById("save-btn").addEventListener("click", () => {
+            savePreferences(getFormValues());
+            showToast("Preferences saved!");
+        });
+
+        // Reset
+        document.getElementById("reset-btn").addEventListener("click", () => {
+            resetPreferences();
+            loadForm();
+            showToast("Preferences reset to defaults.");
+        });
+
+        // Init
+        loadForm();
+    </script>
+</body>
+</html>

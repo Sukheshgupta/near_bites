@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NearBites — Results</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🍽️</span>
+                <span>NearBites</span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="preferences.html">Preferences</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Top bar with active filters -->
+    <div class="top-bar">
+        <div class="container">
+            <span class="top-bar-item">📍 <strong id="top-location">Loading...</strong></span>
+            <span class="top-bar-item">💰 Budget: <strong id="top-budget">₹500</strong></span>
+            <span class="top-bar-item" id="top-filters-container"></span>
+            <a href="index.html" class="btn btn-sm btn-secondary" style="margin-left:auto">✏️ Edit Search</a>
+        </div>
+    </div>
+
+    <div class="container" style="padding-top:16px">
+        <!-- Sidebar toggle (mobile) -->
+        <button class="sidebar-toggle" id="sidebar-toggle">
+            <span>🔧 Filters</span>
+            <span>▼</span>
+        </button>
+
+        <div class="page-layout">
+            <!-- Sidebar filters -->
+            <aside class="sidebar" id="sidebar">
+                <button class="sidebar-close" id="sidebar-close">✕</button>
+                <h3>Filters</h3>
+
+                <div class="sidebar-section">
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span class="form-label">Budget</span>
+                            <span class="slider-value" id="filter-budget-value">₹500</span>
+                        </div>
+                        <input type="range" id="filter-budget" min="50" max="2000" step="50" value="500">
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span class="form-label">Distance</span>
+                            <span class="slider-value" id="filter-radius-value">5.0 km</span>
+                        </div>
+                        <input type="range" id="filter-radius" min="1000" max="30000" step="500" value="15000">
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <p class="form-label">Dietary</p>
+                    <div class="chip-group">
+                        <button class="chip" data-dietary="veg"><span class="dot dot-veg" style="margin-right:4px"></span> Veg</button>
+                        <button class="chip" data-dietary="non-veg"><span class="dot dot-nonveg" style="margin-right:4px"></span> Non-Veg</button>
+                        <button class="chip" data-dietary="vegan"><span class="dot dot-veg" style="margin-right:4px"></span> Vegan</button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <p class="form-label">Cuisine</p>
+                    <div class="chip-group">
+                        <button class="chip" data-cuisine="south-indian">South Indian</button>
+                        <button class="chip" data-cuisine="north-indian">North Indian</button>
+                        <button class="chip" data-cuisine="chinese">Chinese</button>
+                        <button class="chip" data-cuisine="biryani">Biryani</button>
+                        <button class="chip" data-cuisine="italian">Italian</button>
+                        <button class="chip" data-cuisine="cafe">Cafe</button>
+                        <button class="chip" data-cuisine="vegan">Vegan</button>
+                        <button class="chip" data-cuisine="kerala">Kerala</button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="filter-open-now">
+                        <span>Open Now Only</span>
+                    </label>
+                </div>
+
+                <button class="btn btn-primary" style="width:100%" id="apply-filters-mobile">Apply Filters</button>
+            </aside>
+
+            <!-- Main content -->
+            <main class="page-main">
+                <p class="results-count" id="results-count"></p>
+
+                <!-- View tabs -->
+                <div class="tabs">
+                    <button class="tab active" data-tab="list">📋 List View</button>
+                    <button class="tab" data-tab="map">🗺️ Map View</button>
+                    <button class="tab" data-tab="dish">🍛 Dish View</button>
+                </div>
+
+                <!-- List view -->
+                <div class="tab-content active" id="tab-list">
+                    <div class="grid" id="restaurant-grid">
+                        <!-- Skeleton loaders -->
+                        <div class="skeleton skeleton-card"></div>
+                        <div class="skeleton skeleton-card"></div>
+                        <div class="skeleton skeleton-card"></div>
+                        <div class="skeleton skeleton-card"></div>
+                        <div class="skeleton skeleton-card"></div>
+                        <div class="skeleton skeleton-card"></div>
+                    </div>
+                    <div class="empty-state hidden" id="empty-list">
+                        <div class="empty-state-icon">🍽️</div>
+                        <h3>No restaurants found</h3>
+                        <p>Try adjusting your filters or increasing the search radius.</p>
+                    </div>
+                </div>
+
+                <!-- Map view -->
+                <div class="tab-content" id="tab-map">
+                    <div class="map-container" id="results-map"></div>
+                </div>
+
+                <!-- Dish view -->
+                <div class="tab-content" id="tab-dish">
+                    <div id="dish-list" style="display:flex;flex-direction:column;gap:8px">
+                        <div class="skeleton" style="height:60px"></div>
+                        <div class="skeleton" style="height:60px"></div>
+                        <div class="skeleton" style="height:60px"></div>
+                    </div>
+                    <div class="empty-state hidden" id="empty-dishes">
+                        <div class="empty-state-icon">🍛</div>
+                        <h3>No dishes found</h3>
+                        <p>Try increasing your budget or search radius.</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script type="module">
+        import { fetchRestaurants, fetchDishes } from './js/api.js';
+        import { initFilterUI, getActiveFilters, applyFiltersFromPreferences, updateUrlParams } from './js/filters.js';
+        import { initializeMap, addMarkers } from './js/map.js';
+
+        let restaurants = [];
+        let currentMap = null;
+        let mapInitialized = false;
+
+        // Apply preference defaults
+        applyFiltersFromPreferences();
+
+        // Update top bar
+        function updateTopBar() {
+            const f = getActiveFilters();
+            document.getElementById("top-location").textContent = f.location_name || `${f.lat?.toFixed(4)}, ${f.lng?.toFixed(4)}` || "Unknown";
+            document.getElementById("top-budget").textContent = `₹${f.budget}`;
+
+            const filtersEl = document.getElementById("top-filters-container");
+            const tags = [];
+            if (f.dietary) tags.push(f.dietary);
+            if (f.cuisine) tags.push(...f.cuisine.split(","));
+            if (f.open_now) tags.push("Open Now");
+            filtersEl.innerHTML = tags.map(t => `<span class="tag tag-cuisine">${t}</span>`).join(" ");
+        }
+
+        // Render restaurant cards
+        function renderRestaurants(data) {
+            const grid = document.getElementById("restaurant-grid");
+            const empty = document.getElementById("empty-list");
+            const count = document.getElementById("results-count");
+
+            restaurants = data.restaurants || [];
+            count.innerHTML = `<strong>${data.count || 0}</strong> restaurants found`;
+
+            if (restaurants.length === 0) {
+                grid.innerHTML = "";
+                empty.classList.remove("hidden");
+                return;
+            }
+
+            empty.classList.add("hidden");
+            const f = getActiveFilters();
+
+            grid.innerHTML = restaurants.map(r => {
+                const cuisineTags = (r.cuisine_tags || [])
+                    .map(t => `<span class="tag tag-cuisine">${t}</span>`).join("");
+                const priceSymbols = Array(r.price_level || 1).fill('<span class="active-price">₹</span>').join("") +
+                    Array(Math.max(0, 4 - (r.price_level || 1))).fill("₹").join("");
+                const photoHtml = r.photo_url
+                    ? `<img class="card-img" src="${r.photo_url}" alt="${r.name}" loading="lazy" onerror="this.classList.add('placeholder-img');this.src='';this.textContent='🍽️'">`
+                    : `<div class="card-img placeholder-img">🍽️</div>`;
+
+                return `
+                    <a href="restaurant.html?place_id=${encodeURIComponent(r.place_id)}&budget=${f.budget}" class="card" style="text-decoration:none;color:inherit">
+                        ${photoHtml}
+                        <div class="card-body">
+                            <div class="card-title">${r.name}</div>
+                            <div class="card-meta" style="margin-bottom:6px">
+                                <span class="rating"><span class="rating-star">★</span> ${r.rating || "N/A"}</span>
+                                <span class="price-level">${priceSymbols}</span>
+                                <span>${r.distance_km} km</span>
+                                <span class="badge ${r.is_open ? 'badge-open' : 'badge-closed'}">${r.is_open ? 'Open' : 'Closed'}</span>
+                            </div>
+                            <div style="margin-bottom:6px">${cuisineTags}</div>
+                            ${r.dishes_under_budget > 0
+                                ? `<span class="badge badge-budget">${r.dishes_under_budget} dishes under ₹${f.budget}</span>`
+                                : `<span class="badge badge-over-budget">No dishes under ₹${f.budget}</span>`
+                            }
+                        </div>
+                    </a>
+                `;
+            }).join("");
+        }
+
+        // Render dish view
+        async function renderDishes() {
+            const f = getActiveFilters();
+            const dishList = document.getElementById("dish-list");
+            const emptyDishes = document.getElementById("empty-dishes");
+
+            dishList.innerHTML = '<div class="skeleton" style="height:60px"></div>'.repeat(5);
+
+            const data = await fetchDishes(f);
+            const dishes = data.dishes || [];
+
+            if (dishes.length === 0) {
+                dishList.innerHTML = "";
+                emptyDishes.classList.remove("hidden");
+                return;
+            }
+
+            emptyDishes.classList.add("hidden");
+            dishList.innerHTML = dishes.map(d => `
+                <div class="dish-card">
+                    <div class="dish-card-info">
+                        <div class="dish-card-name">
+                            <span class="dot ${d.is_veg ? (d.is_vegan ? 'dot-vegan' : 'dot-veg') : 'dot-nonveg'}"></span>
+                            ${d.name}
+                        </div>
+                        <div class="dish-card-restaurant">
+                            <a href="restaurant.html?place_id=${encodeURIComponent(d.restaurant_place_id)}&budget=${f.budget}">${d.restaurant_name}</a>
+                        </div>
+                        <div class="dish-card-meta">
+                            <span>${d.distance_km} km away</span>
+                            <span>${d.category}</span>
+                        </div>
+                    </div>
+                    <div class="dish-card-price">₹${d.price}</div>
+                </div>
+            `).join("");
+        }
+
+        // Load data
+        async function loadResults() {
+            const f = getActiveFilters();
+            updateTopBar();
+
+            if (!f.lat || !f.lng) {
+                // Default to Chennai center
+                updateUrlParams({ lat: 13.0827, lng: 80.2707 });
+            }
+
+            const data = await fetchRestaurants(getActiveFilters());
+            renderRestaurants(data);
+
+            // If map tab is active, init map
+            if (document.querySelector('[data-tab="map"]').classList.contains("active")) {
+                initMapView();
+            }
+        }
+
+        // Map view
+        async function initMapView() {
+            if (mapInitialized) return;
+            const f = getActiveFilters();
+            const center = { lat: f.lat || 13.0827, lng: f.lng || 80.2707 };
+            currentMap = await initializeMap("results-map", center, 13);
+            if (currentMap) {
+                addMarkers(currentMap, restaurants, f.budget);
+                mapInitialized = true;
+            }
+        }
+
+        // Tabs
+        document.querySelectorAll(".tab").forEach(tab => {
+            tab.addEventListener("click", () => {
+                document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+                document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+                tab.classList.add("active");
+                document.getElementById(`tab-${tab.dataset.tab}`).classList.add("active");
+
+                if (tab.dataset.tab === "map") initMapView();
+                if (tab.dataset.tab === "dish") renderDishes();
+            });
+        });
+
+        // Sidebar filters
+        let debounceTimer;
+        function onFilterChange() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                mapInitialized = false; // Reset map for new data
+                loadResults();
+            }, 400);
+        }
+
+        initFilterUI("sidebar", onFilterChange);
+
+        // Mobile sidebar toggle
+        document.getElementById("sidebar-toggle").addEventListener("click", () => {
+            document.getElementById("sidebar").classList.add("open");
+        });
+        document.getElementById("sidebar-close").addEventListener("click", () => {
+            document.getElementById("sidebar").classList.remove("open");
+        });
+        document.getElementById("apply-filters-mobile").addEventListener("click", () => {
+            document.getElementById("sidebar").classList.remove("open");
+            onFilterChange();
+        });
+
+        // Initial load
+        loadResults();
+    </script>
+</body>
+</html>
