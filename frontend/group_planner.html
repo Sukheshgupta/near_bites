@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NearBites — Group Planner</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <style>
+        /* ── Group Planner specific styles ── */
+        .planner-hero {
+            text-align: center;
+            padding: 48px 16px 32px;
+            background: linear-gradient(135deg, #E8F5E9 0%, #F3E5F5 100%);
+        }
+        .planner-hero h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+        .planner-hero p  { font-size: 1.05rem; color: var(--text-secondary); }
+
+        /* ── Form card ── */
+        .planner-form {
+            max-width: 780px;
+            margin: -24px auto 40px;
+            background: var(--bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-hover);
+            padding: 32px;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .form-section { margin-bottom: 28px; }
+
+        /* ── People stepper ── */
+        .people-stepper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .stepper-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            line-height: 1;
+        }
+        .stepper-btn:hover { background: var(--primary); color: white; }
+        .stepper-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            min-width: 40px;
+            text-align: center;
+            color: var(--text);
+        }
+        .stepper-label { font-size: 0.9rem; color: var(--text-secondary); }
+
+        /* ── Person dietary rows ── */
+        .person-list { display: flex; flex-direction: column; gap: 10px; }
+        .person-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+        }
+        .person-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .person-label { font-size: 0.9rem; font-weight: 500; flex: 1; }
+        .dietary-toggle { display: flex; gap: 6px; }
+        .diet-btn {
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+        .diet-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .diet-btn.active-veg    { background: var(--veg); border-color: var(--veg); color: white; }
+        .diet-btn.active-nonveg { background: var(--non-veg); border-color: var(--non-veg); color: white; }
+        .diet-btn.active-vegan  { background: #6A1B9A; border-color: #6A1B9A; color: white; }
+
+        /* ── Budget slider ── */
+        .slider-container { width: 100%; }
+        .slider-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .slider-value { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+        input[type="range"] { width: 100%; accent-color: var(--primary); }
+        .total-budget-pill {
+            display: inline-block;
+            margin-top: 10px;
+            background: #FFF3E0;
+            color: var(--primary-dark);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 6px 16px;
+            border-radius: 20px;
+        }
+
+        /* ── Priority picker ── */
+        .priority-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .priority-card {
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .priority-card:hover { border-color: var(--primary); }
+        .priority-card.active { border-color: var(--primary); background: #FFF3E0; }
+        .priority-icon { font-size: 1.4rem; }
+        .priority-text { font-size: 0.88rem; font-weight: 600; }
+        .priority-sub  { font-size: 0.75rem; color: var(--text-secondary); }
+
+        /* ── Mode toggle ── */
+        .mode-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .mode-card {
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+        .mode-card:hover { border-color: var(--primary); }
+        .mode-card.active { border-color: var(--primary); background: #FFF3E0; }
+        .mode-icon { font-size: 2rem; margin-bottom: 6px; }
+        .mode-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+        .mode-desc  { font-size: 0.78rem; color: var(--text-secondary); }
+        .mode-badge {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--surface);
+            color: var(--text-secondary);
+        }
+        .mode-card.active .mode-badge { background: var(--primary); color: white; }
+
+        /* ── CTA ── */
+        .planner-cta { text-align: center; margin-top: 8px; }
+
+        /* ────────────────────────────────────────────────
+           Results
+        ──────────────────────────────────────────────── */
+        .results-section {
+            max-width: 780px;
+            margin: 0 auto 60px;
+            display: none;
+        }
+        .results-section.visible { display: block; }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .results-title { font-size: 1.2rem; font-weight: 700; }
+        .results-meta  { font-size: 0.85rem; color: var(--text-secondary); }
+
+        /* ── Same-restaurant result card ── */
+        .rec-card {
+            background: var(--bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .rec-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+
+        .rec-card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .rec-rank {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .rec-rank.silver { background: #9E9E9E; }
+        .rec-rank.bronze { background: #8D6E63; }
+
+        .rec-restaurant-info { flex: 1; }
+        .rec-restaurant-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 2px; }
+        .rec-restaurant-meta {
+            display: flex; gap: 12px; flex-wrap: wrap;
+            font-size: 0.82rem; color: var(--text-secondary);
+            align-items: center;
+        }
+        .rec-restaurant-meta span { display: flex; align-items: center; gap: 4px; }
+
+        .rec-total-badge {
+            text-align: right;
+        }
+        .rec-total-amount {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .rec-total-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .rec-card-body { padding: 16px 20px; }
+
+        .dish-suggestion-list { display: flex; flex-direction: column; gap: 8px; }
+        .dish-suggestion-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+        }
+        .dish-person-badge {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .dish-name  { flex: 1; font-size: 0.88rem; font-weight: 500; }
+        .dish-price { font-size: 0.88rem; font-weight: 600; color: var(--primary); }
+        .dot-veg    { width: 10px; height: 10px; border-radius: 50%; background: var(--veg); display: inline-block; flex-shrink: 0; }
+        .dot-nonveg { width: 10px; height: 10px; border-radius: 50%; background: var(--non-veg); display: inline-block; flex-shrink: 0; }
+        .dot-vegan  { width: 10px; height: 10px; border-radius: 50%; background: #6A1B9A; display: inline-block; flex-shrink: 0; }
+
+        .rec-card-footer {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface);
+        }
+        .rec-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+        .rec-tag {
+            font-size: 0.72rem;
+            padding: 3px 10px;
+            border-radius: 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .rec-tag.highlight { background: #E8F5E9; border-color: var(--veg); color: var(--veg); }
+
+        /* ── Best-per-person card ── */
+        .bpp-card {
+            background: var(--bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .bpp-header {
+            padding: 14px 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .bpp-title { font-weight: 700; font-size: 1rem; }
+        .bpp-total { font-size: 1.3rem; font-weight: 700; }
+
+        .bpp-person-rows { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+        .bpp-person-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+        }
+        .bpp-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: var(--primary);
+            color: white; font-size: 0.8rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .bpp-dish-info { flex: 1; }
+        .bpp-dish-name { font-size: 0.9rem; font-weight: 600; }
+        .bpp-rest-name { font-size: 0.78rem; color: var(--text-secondary); }
+        .bpp-dish-price { font-weight: 700; color: var(--primary); font-size: 0.9rem; }
+
+        .bpp-notice {
+            margin: 0 20px 16px;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .bpp-notice.warning { background: #FFF8E1; color: #F57F17; border: 1px solid #FFE082; }
+        .bpp-notice.success { background: #E8F5E9; color: #2E7D32; border: 1px solid #A5D6A7; }
+
+        /* ── Savings callout ── */
+        .savings-bar {
+            background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
+            border: 1px solid #A5D6A7;
+            border-radius: var(--radius-sm);
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .savings-icon { font-size: 1.5rem; }
+        .savings-text { font-size: 0.88rem; }
+        .savings-amount { font-weight: 700; color: var(--veg); }
+
+        /* ── Loading skeleton ── */
+        .skeleton {
+            background: linear-gradient(90deg, var(--surface) 25%, var(--border) 50%, var(--surface) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+            border-radius: var(--radius-sm);
+        }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .planner-form { padding: 20px 16px; margin: -16px 12px 30px; }
+            .priority-grid { grid-template-columns: 1fr; }
+            .mode-toggle { grid-template-columns: 1fr; }
+            .rec-card-header { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="container">
+        <a href="index.html" class="logo">
+            <span class="logo-icon">🍽️</span>
+            <span>NearBites</span>
+        </a>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="group_planner.html" class="active">Group Planner</a></li>
+                <li><a href="preferences.html">Preferences</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<!-- Hero -->
+<section class="planner-hero">
+    <div class="container">
+        <h1>👥 Group Planner</h1>
+        <p>Tell us about your group — we'll find the best food that works for everyone.</p>
+    </div>
+</section>
+
+<!-- Form -->
+<div class="container">
+<div class="planner-form">
+
+    <!-- 1. People count -->
+    <div class="form-section">
+        <p class="section-title">How many people?</p>
+        <div class="people-stepper">
+            <button class="stepper-btn" id="people-minus">−</button>
+            <span class="stepper-value" id="people-count">3</span>
+            <button class="stepper-btn" id="people-plus">+</button>
+            <span class="stepper-label">people in your group</span>
+        </div>
+    </div>
+
+    <!-- 2. Per-person dietary -->
+    <div class="form-section">
+        <p class="section-title">Dietary preferences — per person</p>
+        <div class="person-list" id="person-list">
+            <!-- populated by JS -->
+        </div>
+    </div>
+
+    <!-- 3. Budget per person -->
+    <div class="form-section">
+        <p class="section-title">Budget per person</p>
+        <div class="slider-container">
+            <div class="slider-label">
+                <span style="font-size:0.9rem;color:var(--text-secondary)">Per person</span>
+                <span class="slider-value" id="budget-display">₹200</span>
+            </div>
+            <input type="range" id="budget-slider" min="50" max="2000" step="50" value="200">
+            <div class="slider-label" style="font-size:0.78rem;color:var(--text-secondary);margin-top:4px">
+                <span>₹50</span><span>₹2000</span>
+            </div>
+        </div>
+        <div>
+            <span class="total-budget-pill" id="total-budget-pill">Total group budget: ₹600</span>
+        </div>
+    </div>
+
+    <!-- 4. Cuisine -->
+    <div class="form-section">
+        <p class="section-title">What are you in the mood for? <span style="font-weight:400;color:var(--text-secondary)">(optional)</span></p>
+        <div class="chip-group">
+            <button class="chip" data-cuisine="south-indian">South Indian</button>
+            <button class="chip" data-cuisine="north-indian">North Indian</button>
+            <button class="chip" data-cuisine="chinese">Chinese</button>
+            <button class="chip" data-cuisine="biryani">Biryani</button>
+            <button class="chip" data-cuisine="italian">Italian</button>
+            <button class="chip" data-cuisine="cafe">Cafe</button>
+            <button class="chip" data-cuisine="kerala">Kerala</button>
+            <button class="chip" data-cuisine="street-food">Street Food</button>
+        </div>
+    </div>
+
+    <!-- 4b. Dish category -->
+    <div class="form-section">
+        <p class="section-title">Type of dish <span style="font-weight:400;color:var(--text-secondary)">(optional — leave blank for all)</span></p>
+        <div class="chip-group">
+            <button class="chip" data-dishcat="Starters">Starters</button>
+            <button class="chip" data-dishcat="Main Course">Main Course</button>
+            <button class="chip" data-dishcat="Biryani & Rice">Biryani & Rice</button>
+            <button class="chip" data-dishcat="Breads & Tiffin">Breads & Tiffin</button>
+            <button class="chip" data-dishcat="Rice & Noodles">Rice & Noodles</button>
+            <button class="chip" data-dishcat="Fast Food">Fast Food</button>
+            <button class="chip" data-dishcat="Desserts">Desserts</button>
+            <button class="chip" data-dishcat="Ice Cream & Shakes">Ice Cream & Shakes</button>
+            <button class="chip" data-dishcat="Beverages">Beverages</button>
+            <button class="chip" data-dishcat="Combos & Meals">Combos & Meals</button>
+            <button class="chip" data-dishcat="Sides & Salads">Sides & Salads</button>
+        </div>
+    </div>
+
+    <!-- 5. Meal time -->
+    <div class="form-section">
+        <p class="section-title">When are you eating?</p>
+        <div class="mode-toggle" style="grid-template-columns:1fr 1fr 1fr">
+            <div class="mode-card active" data-mealtime="lunch">
+                <div class="mode-icon">☀️</div>
+                <div class="mode-title">Lunch</div>
+                <div class="mode-desc">Breakfast-only items excluded</div>
+            </div>
+            <div class="mode-card" data-mealtime="dinner">
+                <div class="mode-icon">🌙</div>
+                <div class="mode-title">Dinner</div>
+                <div class="mode-desc">Breakfast-only items excluded</div>
+            </div>
+            <div class="mode-card" data-mealtime="anytime">
+                <div class="mode-icon">🕐</div>
+                <div class="mode-title">Anytime</div>
+                <div class="mode-desc">All items shown</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5b. Extras after mains -->
+    <div class="form-section">
+        <p class="section-title">After the main course, would you like to add anything?</p>
+        <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:10px">
+            Only added if budget allows after mains. Starters are shared; desserts are per person.
+        </p>
+        <div class="chip-group">
+            <button class="chip" id="toggle-starters" data-extra="starters">
+                🍢 Starters (shared)
+            </button>
+            <button class="chip" id="toggle-desserts" data-extra="desserts">
+                🍨 Desserts (per person)
+            </button>
+        </div>
+    </div>
+
+    <!-- 5c. Budget flexibility -->
+    <div class="form-section">
+        <p class="section-title">How strict is your budget?</p>
+        <div class="priority-grid">
+            <div class="priority-card active" data-flexibility="strict">
+                <span class="priority-icon">🔒</span>
+                <div>
+                    <div class="priority-text">Strict</div>
+                    <div class="priority-sub">Only dishes within budget</div>
+                </div>
+            </div>
+            <div class="priority-card" data-flexibility="flexible">
+                <span class="priority-icon">↕️</span>
+                <div>
+                    <div class="priority-text">Flexible (+20%)</div>
+                    <div class="priority-sub">Show slightly over-budget dishes</div>
+                </div>
+            </div>
+            <div class="priority-card" data-flexibility="generous">
+                <span class="priority-icon">🎉</span>
+                <div>
+                    <div class="priority-text">Go for it (+50%)</div>
+                    <div class="priority-sub">Worth it for a great meal</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Priority -->
+    <div class="form-section">
+        <p class="section-title">What matters most to your group?</p>
+        <div class="priority-grid">
+            <div class="priority-card active" data-priority="rating">
+                <span class="priority-icon">⭐</span>
+                <div>
+                    <div class="priority-text">Best Rated</div>
+                    <div class="priority-sub">Highest reviewed restaurants first</div>
+                </div>
+            </div>
+            <div class="priority-card" data-priority="distance">
+                <span class="priority-icon">📍</span>
+                <div>
+                    <div class="priority-text">Closest</div>
+                    <div class="priority-sub">Minimize travel &amp; delivery time</div>
+                </div>
+            </div>
+            <div class="priority-card" data-priority="variety">
+                <span class="priority-icon">🍱</span>
+                <div>
+                    <div class="priority-text">Most Variety</div>
+                    <div class="priority-sub">More dish choices within budget</div>
+                </div>
+            </div>
+            <div class="priority-card" data-priority="value">
+                <span class="priority-icon">💰</span>
+                <div>
+                    <div class="priority-text">Best Value</div>
+                    <div class="priority-sub">Lowest average dish price</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Mode -->
+    <div class="form-section">
+        <p class="section-title">Ordering style</p>
+        <div class="mode-toggle">
+            <div class="mode-card active" data-mode="same_restaurant">
+                <div class="mode-icon">🏠</div>
+                <div class="mode-title">Same Restaurant</div>
+                <div class="mode-desc">Everyone orders from one place — one delivery, one bill, arrives together.</div>
+                <span class="mode-badge">Recommended</span>
+            </div>
+            <div class="mode-card" data-mode="best_per_person">
+                <div class="mode-icon">🗺️</div>
+                <div class="mode-title">Best Dish Per Person</div>
+                <div class="mode-desc">Each person gets their ideal dish, even if it's from different restaurants.</div>
+                <span class="mode-badge">Multiple deliveries</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="planner-cta">
+        <button class="btn btn-primary btn-lg" id="recommend-btn">
+            🔍 Find Recommendations
+        </button>
+    </div>
+
+</div><!-- /planner-form -->
+
+<!-- ─── Results ─── -->
+<div class="results-section" id="results-section">
+
+    <div class="results-header">
+        <div>
+            <div class="results-title" id="results-title">Top picks for your group</div>
+            <div class="results-meta" id="results-meta"></div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="back-btn">← Edit</button>
+    </div>
+
+    <!-- Savings callout -->
+    <div class="savings-bar" id="savings-bar" style="display:none">
+        <span class="savings-icon">💡</span>
+        <span class="savings-text">
+            Your group of <strong id="sv-people">3</strong> can eat well for
+            <span class="savings-amount" id="sv-total">₹540</span> total —
+            <span class="savings-amount" id="sv-saved">₹60</span> under your max budget.
+        </span>
+    </div>
+
+    <!-- Loading state -->
+    <div id="results-loading" style="display:none">
+        <div class="rec-card" style="padding:32px;text-align:center;color:var(--text-secondary)">
+            <div style="font-size:2rem;margin-bottom:8px">🔍</div>
+            <div>Finding the best options for your group...</div>
+        </div>
+    </div>
+
+    <!-- Error state -->
+    <div id="results-error" style="display:none">
+        <div class="rec-card" style="padding:32px;text-align:center;color:var(--error)">
+            <div style="font-size:2rem;margin-bottom:8px">⚠️</div>
+            <div id="error-msg">Could not load recommendations. Is the backend running?</div>
+        </div>
+    </div>
+
+    <!-- Mode: same restaurant -->
+    <div id="results-same" style="display:none"></div>
+
+    <!-- Mode: best per person -->
+    <div id="results-bpp" style="display:none"></div>
+
+</div><!-- /results-section -->
+</div><!-- /container -->
+
+<footer style="text-align:center;padding:32px 16px;color:var(--text-secondary);font-size:0.85rem">
+    <p>NearBites — Group Planner · MVP Preview</p>
+</footer>
+
+<script>
+    const API_BASE = 'http://localhost:8000';
+
+    // ── State ──────────────────────────────────────────────────────────────────
+    let people = 3;
+    let budgetPerPerson = 200;
+    let selectedMode = 'same_restaurant';
+    let selectedPriority = 'rating';
+    let selectedMealTime = 'lunch';
+    let selectedFlexibility = 'strict';
+    let wantStarters = false;
+    let wantDesserts = false;
+    const dietaryState = {};
+
+    // Default location: Olympia Tech Park, Guindy
+    const DEFAULT_LAT = 13.0072;
+    const DEFAULT_LNG = 80.2197;
+
+    // ── People stepper ─────────────────────────────────────────────────────────
+    document.getElementById('people-minus').addEventListener('click', () => {
+        if (people > 1) { people--; updatePeople(); }
+    });
+    document.getElementById('people-plus').addEventListener('click', () => {
+        if (people < 12) { people++; updatePeople(); }
+    });
+
+    function updatePeople() {
+        document.getElementById('people-count').textContent = people;
+        renderPersonList();
+        updateTotalBudget();
+    }
+
+    // ── Person dietary list ────────────────────────────────────────────────────
+    function renderPersonList() {
+        const list = document.getElementById('person-list');
+        list.innerHTML = '';
+        for (let i = 0; i < people; i++) {
+            if (!dietaryState[i]) dietaryState[i] = 'veg';
+            const row = document.createElement('div');
+            row.className = 'person-row';
+            row.innerHTML = `
+                <div class="person-avatar">P${i + 1}</div>
+                <span class="person-label">Person ${i + 1}</span>
+                <div class="dietary-toggle">
+                    <button class="diet-btn ${dietaryState[i] === 'veg' ? 'active-veg' : ''}"
+                            data-person="${i}" data-diet="veg">🟢 Veg</button>
+                    <button class="diet-btn ${dietaryState[i] === 'non-veg' ? 'active-nonveg' : ''}"
+                            data-person="${i}" data-diet="non-veg">🔴 Non-Veg</button>
+                    <button class="diet-btn ${dietaryState[i] === 'vegan' ? 'active-vegan' : ''}"
+                            data-person="${i}" data-diet="vegan">🌿 Vegan</button>
+                </div>
+            `;
+            list.appendChild(row);
+        }
+        list.querySelectorAll('.diet-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                dietaryState[parseInt(btn.dataset.person)] = btn.dataset.diet;
+                renderPersonList();
+            });
+        });
+    }
+
+    // ── Budget slider ──────────────────────────────────────────────────────────
+    document.getElementById('budget-slider').addEventListener('input', function() {
+        budgetPerPerson = parseInt(this.value);
+        document.getElementById('budget-display').textContent = `₹${budgetPerPerson}`;
+        updateTotalBudget();
+    });
+
+    function updateTotalBudget() {
+        document.getElementById('total-budget-pill').textContent =
+            `Total group budget: ₹${budgetPerPerson * people}`;
+    }
+
+    // ── Meal time toggle ───────────────────────────────────────────────────────
+    document.querySelectorAll('[data-mealtime]').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('[data-mealtime]').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            selectedMealTime = card.dataset.mealtime;
+        });
+    });
+
+    // ── Extras toggles ─────────────────────────────────────────────────────────
+    document.getElementById('toggle-starters').addEventListener('click', function() {
+        wantStarters = !wantStarters;
+        this.classList.toggle('active', wantStarters);
+    });
+    document.getElementById('toggle-desserts').addEventListener('click', function() {
+        wantDesserts = !wantDesserts;
+        this.classList.toggle('active', wantDesserts);
+    });
+
+    // ── Budget flexibility ─────────────────────────────────────────────────────
+    document.querySelectorAll('[data-flexibility]').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('[data-flexibility]').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            selectedFlexibility = card.dataset.flexibility;
+        });
+    });
+
+    // ── Priority cards ─────────────────────────────────────────────────────────
+    document.querySelectorAll('.priority-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.priority-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            selectedPriority = card.dataset.priority;
+        });
+    });
+
+    // ── Cuisine chips ──────────────────────────────────────────────────────────
+    document.querySelectorAll('[data-cuisine]').forEach(chip => {
+        chip.addEventListener('click', () => chip.classList.toggle('active'));
+    });
+
+    // ── Dish category chips ────────────────────────────────────────────────────
+    document.querySelectorAll('[data-dishcat]').forEach(chip => {
+        chip.addEventListener('click', () => chip.classList.toggle('active'));
+    });
+
+    // ── Mode toggle ────────────────────────────────────────────────────────────
+    document.querySelectorAll('.mode-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            selectedMode = card.dataset.mode;
+        });
+    });
+
+    // ── Recommend button ───────────────────────────────────────────────────────
+    document.getElementById('recommend-btn').addEventListener('click', fetchRecommendations);
+    document.getElementById('back-btn').addEventListener('click', () => {
+        document.getElementById('results-section').classList.remove('visible');
+        document.querySelector('.planner-form').style.display = 'block';
+    });
+
+    async function fetchRecommendations() {
+        document.querySelector('.planner-form').style.display = 'none';
+        const section = document.getElementById('results-section');
+        section.classList.add('visible');
+
+        // Hide all panels, show loading
+        ['results-loading','results-error','results-same','results-bpp','savings-bar'].forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
+        document.getElementById('results-loading').style.display = 'block';
+        section.scrollIntoView({ behavior: 'smooth' });
+
+        const total = budgetPerPerson * people;
+        document.getElementById('results-meta').textContent =
+            `${people} people · ₹${budgetPerPerson}/person · ₹${total} total budget`;
+
+        const groupDietary = Array.from({ length: people }, (_, i) => dietaryState[i] || 'veg').join(',');
+        const cuisines = Array.from(document.querySelectorAll('[data-cuisine].active'))
+            .map(c => c.dataset.cuisine).join(',');
+
+        const dishCategories = Array.from(document.querySelectorAll('[data-dishcat].active'))
+            .map(c => c.dataset.dishcat).join(',');
+
+        const params = new URLSearchParams({
+            lat: DEFAULT_LAT,
+            lng: DEFAULT_LNG,
+            radius: 15000,
+            budget_per_person: budgetPerPerson,
+            people,
+            group_dietary: groupDietary,
+            cuisine: cuisines,
+            dish_category: dishCategories,
+            meal_time: selectedMealTime,
+            want_starters: wantStarters,
+            want_desserts: wantDesserts,
+            budget_policy: selectedFlexibility,
+            priority: selectedPriority,
+            mode: selectedMode,
+        });
+
+        try {
+            const res = await fetch(`${API_BASE}/api/recommend?${params}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            document.getElementById('results-loading').style.display = 'none';
+            renderResults(data);
+        } catch (err) {
+            document.getElementById('results-loading').style.display = 'none';
+            document.getElementById('error-msg').textContent =
+                `Could not load recommendations. Is the backend running at ${API_BASE}? (${err.message})`;
+            document.getElementById('results-error').style.display = 'block';
+        }
+    }
+
+    // ── Render helpers ─────────────────────────────────────────────────────────
+    const RANK_CLASS = ['', '', 'silver', 'bronze'];
+    const RANK_LABEL = ['', '1', '2', '3', '4', '5'];
+
+    function dotHtml(isVegan, isVeg) {
+        if (isVegan) return '<span class="dot-vegan" title="Vegan"></span>';
+        if (isVeg)   return '<span class="dot-veg"   title="Veg"></span>';
+        return '<span class="dot-nonveg" title="Non-Veg"></span>';
+    }
+
+    function renderResults(data) {
+        if (data.mode === 'same_restaurant') {
+            renderSameRestaurant(data);
+        } else {
+            renderBestPerPerson(data);
+        }
+    }
+
+    const BUDGET_LABEL_STYLE = {
+        'within budget': '',
+        'slightly over': 'color:#E65100;font-size:0.7rem;margin-left:4px',
+        'splurge':       'color:var(--error);font-size:0.7rem;margin-left:4px',
+    };
+    const BUDGET_LABEL_TEXT = {
+        'within budget': '',
+        'slightly over': '(slightly over)',
+        'splurge':       '(splurge)',
+    };
+
+    function budgetBadge(label) {
+        if (!label || label === 'within budget') return '';
+        return `<span style="${BUDGET_LABEL_STYLE[label]}">${BUDGET_LABEL_TEXT[label]}</span>`;
+    }
+
+    function renderCourseSection(title, dishes, isShared) {
+        if (!dishes || dishes.length === 0) return '';
+        const rows = dishes.map(d => `
+            <div class="dish-suggestion-row">
+                ${d.person ? `<div class="dish-person-badge">P${d.person}</div>` :
+                  `<div class="dish-person-badge" style="background:var(--text-secondary);font-size:0.6rem">ALL</div>`}
+                ${dotHtml(d.is_vegan, d.is_veg)}
+                <span class="dish-name">${d.dish_name}${isShared ? ' <em style="font-size:0.72rem;color:var(--text-secondary)">(shared)</em>' : ''}</span>
+                <span class="dish-price">₹${d.price.toFixed(0)}${budgetBadge(d.budget_label)}</span>
+            </div>`).join('');
+        return `
+            <p class="section-title" style="margin:12px 0 6px">${title}</p>
+            <div class="dish-suggestion-list">${rows}</div>`;
+    }
+
+    function renderSameRestaurant(data) {
+        const container = document.getElementById('results-same');
+        container.innerHTML = '';
+
+        if (!data.recommendations || data.recommendations.length === 0) {
+            container.innerHTML = `<div class="rec-card" style="padding:32px;text-align:center;color:var(--text-secondary)">
+                No restaurants found matching all your filters. Try increasing the budget or relaxing filters.</div>`;
+            container.style.display = 'block';
+            return;
+        }
+
+        const best = data.recommendations[0];
+        const saved = Math.round(data.total_budget - best.costs.estimated_total);
+        if (saved > 0) {
+            document.getElementById('sv-people').textContent = data.people;
+            document.getElementById('sv-total').textContent  = `₹${best.costs.estimated_total}`;
+            document.getElementById('sv-saved').textContent  = `₹${saved}`;
+            document.getElementById('savings-bar').style.display = 'flex';
+        }
+
+        document.getElementById('results-title').textContent =
+            `Top ${data.recommendations.length} restaurants for your group`;
+
+        data.recommendations.forEach((rec, idx) => {
+            const r = rec.restaurant;
+            const rankClass = idx < 3 ? RANK_CLASS[idx + 1] : '';
+            const rankLabel = idx < 4 ? RANK_LABEL[idx + 1] : idx + 1;
+            const cuisineTags = (r.cuisine_tags || []).slice(0, 3).join(' · ');
+            const savings = Math.round(data.total_budget - rec.costs.estimated_total);
+
+            // Build course sections
+            const startersHtml = renderCourseSection('Starters (shared)', rec.order.starters, true);
+            const mainsHtml    = renderCourseSection('Main Course', rec.order.mains, false);
+            const dessertsHtml = renderCourseSection('Desserts', rec.order.desserts, false);
+
+            // Cost breakdown bar
+            const costBarParts = [];
+            if (rec.costs.starters_total > 0)
+                costBarParts.push(`Starters ₹${rec.costs.starters_total}`);
+            costBarParts.push(`Mains ₹${rec.costs.mains_total}`);
+            if (rec.costs.desserts_total > 0)
+                costBarParts.push(`Desserts ₹${rec.costs.desserts_total}`);
+            const costBar = costBarParts.join(' &nbsp;|&nbsp; ');
+
+            // Extras not found warning
+            const extrasWarn = rec.extras_not_found && rec.extras_not_found.length
+                ? `<p style="font-size:0.78rem;color:#E65100;margin-top:8px">
+                    ⚠️ Could not add: ${rec.extras_not_found.join(', ')}</p>` : '';
+
+            const savingsTag = savings > 0
+                ? `<span class="rec-tag">₹${savings} under budget</span>` : '';
+
+            const card = document.createElement('div');
+            card.className = 'rec-card';
+            card.innerHTML = `
+                <div class="rec-card-header">
+                    <div class="rec-rank ${rankClass}">${rankLabel}</div>
+                    <div class="rec-restaurant-info">
+                        <div class="rec-restaurant-name">${r.name}</div>
+                        <div class="rec-restaurant-meta">
+                            <span>⭐ ${r.rating || '—'}</span>
+                            <span>📍 ${r.distance_km} km</span>
+                            <span>🍽️ ${rec.affordable_mains_count} mains within budget</span>
+                            ${cuisineTags ? `<span>${cuisineTags}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="rec-total-badge">
+                        <div class="rec-total-amount">₹${rec.costs.estimated_total.toFixed(0)}</div>
+                        <div class="rec-total-label">est. total</div>
+                    </div>
+                </div>
+                <div class="rec-card-body">
+                    ${startersHtml}${mainsHtml}${dessertsHtml}${extrasWarn}
+                    <p style="font-size:0.78rem;color:var(--text-secondary);margin-top:10px;border-top:1px solid var(--border);padding-top:8px">
+                        ${costBar}
+                    </p>
+                </div>
+                <div class="rec-card-footer">
+                    <div class="rec-tags">
+                        <span class="rec-tag highlight">✓ All dietary needs met</span>
+                        ${r.is_open ? '<span class="rec-tag">Open now</span>' : '<span class="rec-tag" style="color:var(--error)">Closed</span>'}
+                        ${savingsTag}
+                    </div>
+                    <a href="restaurant.html?place_id=${r.place_id}" class="btn btn-outline btn-sm">View Menu</a>
+                </div>`;
+            container.appendChild(card);
+        });
+
+        container.style.display = 'block';
+    }
+
+    function renderBestPerPerson(data) {
+        const container = document.getElementById('results-bpp');
+        container.innerHTML = '';
+
+        if (!data.per_person || data.per_person.length === 0) {
+            container.innerHTML = `<div class="rec-card" style="padding:32px;text-align:center;color:var(--text-secondary)">
+                No dishes found matching your filters. Try increasing the budget.</div>`;
+            container.style.display = 'block';
+            return;
+        }
+
+        document.getElementById('results-title').textContent = 'Best dish for each person';
+
+        // Savings bar
+        const saved = Math.round(data.total_budget - data.estimated_total);
+        if (saved > 0) {
+            document.getElementById('sv-people').textContent = data.people;
+            document.getElementById('sv-total').textContent  = `₹${data.estimated_total}`;
+            document.getElementById('sv-saved').textContent  = `₹${saved}`;
+            document.getElementById('savings-bar').style.display = 'flex';
+        }
+
+        // Warning / success notice
+        let noticeHtml = '';
+        if (data.multiple_deliveries) {
+            noticeHtml = `<div class="bpp-notice warning">
+                <span>⚠️</span>
+                <span>These dishes come from <strong>${data.unique_restaurants} different restaurants</strong>.
+                Expect separate deliveries and different arrival times.</span></div>`;
+        }
+
+        // Group people by restaurant to show shared-restaurant hint
+        const restGroups = {};
+        data.per_person.forEach(p => {
+            if (!restGroups[p.restaurant_place_id]) restGroups[p.restaurant_place_id] = [];
+            restGroups[p.restaurant_place_id].push(p.person);
+        });
+        const sharedHints = Object.entries(restGroups)
+            .filter(([, persons]) => persons.length > 1)
+            .map(([, persons]) => `Persons ${persons.join(' and ')} are ordering from the same restaurant — one delivery.`);
+        const sharedHtml = sharedHints.length
+            ? `<div class="bpp-notice success" style="margin-top:0"><span>✓</span>
+               <span>${sharedHints.join(' ')}</span></div>` : '';
+
+        const personRows = data.per_person.map(p => `
+            <div class="bpp-person-row">
+                <div class="bpp-avatar">P${p.person}</div>
+                ${dotHtml(p.is_vegan, p.is_veg)}
+                <div class="bpp-dish-info">
+                    <div class="bpp-dish-name">${p.dish_name}</div>
+                    <div class="bpp-rest-name">📍 ${p.restaurant_name} · ${p.distance_km} km · ⭐ ${p.restaurant_rating}</div>
+                </div>
+                <span class="bpp-dish-price">₹${p.price.toFixed(0)}</span>
+            </div>`).join('');
+
+        container.innerHTML = `
+            ${noticeHtml}
+            <div class="bpp-card">
+                <div class="bpp-header">
+                    <span class="bpp-title">Best dish for each person</span>
+                    <span class="bpp-total">₹${data.estimated_total.toFixed(0)} total</span>
+                </div>
+                <div class="bpp-person-rows">${personRows}</div>
+                ${sharedHtml}
+            </div>
+            <div style="text-align:center;margin-top:8px">
+                <button class="btn btn-secondary btn-sm" id="switch-to-same-btn">
+                    Switch to same-restaurant view instead
+                </button>
+            </div>`;
+
+        container.style.display = 'block';
+        document.getElementById('switch-to-same-btn').addEventListener('click', () => {
+            document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-mode="same_restaurant"]').classList.add('active');
+            selectedMode = 'same_restaurant';
+            fetchRecommendations();
+        });
+    }
+
+    // ── Init ───────────────────────────────────────────────────────────────────
+    renderPersonList();
+    updateTotalBudget();
+</script>
+</body>
+</html>

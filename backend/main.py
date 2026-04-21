@@ -282,6 +282,62 @@ async def list_dishes(
     }
 
 
+# --- Group Recommender ---
+# Thin route: validates params, builds RecommendRequest, delegates to recommender/
+
+from recommender import recommend as _recommend_engine, RecommendRequest, BudgetPolicy
+
+@app.get("/api/recommend")
+async def recommend(
+    lat: float = Query(...),
+    lng: float = Query(...),
+    radius: float = Query(15000),
+    budget_per_person: float = Query(..., description="Per-person budget in INR"),
+    people: int = Query(..., ge=1, le=20),
+    group_dietary: str = Query("", description="Comma-separated dietary per person, e.g. veg,non-veg,veg"),
+    cuisine: str = Query("", description="Comma-separated cuisine preferences"),
+    dish_category: str = Query("", description="Comma-separated normalized_category filters"),
+    meal_time: str = Query("lunch", description="lunch | dinner | anytime"),
+    want_starters: bool = Query(False, description="Include shared starters if budget allows"),
+    want_desserts: bool = Query(False, description="Include per-person desserts if budget allows"),
+    budget_policy: str = Query("strict", description="strict | flexible | generous"),
+    priority: str = Query("rating", description="rating | distance | variety | value"),
+    mode: str = Query("same_restaurant", description="same_restaurant | best_per_person"),
+    db: Session = Depends(get_db),
+):
+    # Parse per-person dietary list; pad/truncate to `people` length
+    raw_diets = [d.strip().lower() for d in group_dietary.split(",") if d.strip()]
+    person_diets = (raw_diets + ["any"] * people)[:people]
+
+    req = RecommendRequest(
+        people=people,
+        person_diets=person_diets,
+        lat=lat,
+        lng=lng,
+        radius_m=radius,
+        budget_per_person=budget_per_person,
+        budget_policy=BudgetPolicy.from_name(budget_policy),
+        meal_time=meal_time,
+        want_starters=want_starters,
+        want_desserts=want_desserts,
+        cuisine_filters=[c.strip().lower() for c in cuisine.split(",") if c.strip()],
+        category_filters=[c.strip() for c in dish_category.split(",") if c.strip()],
+        priority=priority,
+        mode=mode,
+    )
+
+    all_restaurants = db.query(Restaurant).all()
+    nearby = [
+        r for r in all_restaurants
+        if _haversine_km(lat, lng, r.lat, r.lng) * 1000 <= radius
+    ]
+
+    def distance_fn(r):
+        return _haversine_km(lat, lng, r.lat, r.lng)
+
+    return _recommend_engine(req, nearby, distance_fn)
+
+
 # --- Reviews ---
 
 class ReviewCreate(BaseModel):
