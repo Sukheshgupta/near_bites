@@ -19,7 +19,6 @@ from cache import (
 )
 from models import Base, Dish, Restaurant, Review, get_engine, get_session_factory
 from places import get_place_details, search_nearby
-from seed_data import seed_database
 
 load_dotenv()
 
@@ -38,7 +37,6 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
-    seed_database(engine)
     yield
 
 
@@ -104,22 +102,14 @@ async def list_restaurants(
                 restaurants = cache_restaurants(db, api_results)
                 source = "api"
 
-    # Always include seed data within range
-    all_restaurants = db.query(Restaurant).all()
-    seed_in_range = [
-        r for r in all_restaurants
-        if r.place_id.startswith("seed_") and _haversine_km(lat, lng, r.lat, r.lng) * 1000 <= radius
-    ]
-
     if restaurants is None:
-        restaurants = seed_in_range
-        source = "seed"
-    else:
-        # Merge seed data (avoid duplicates)
-        existing_ids = {r.place_id for r in restaurants}
-        for sr in seed_in_range:
-            if sr.place_id not in existing_ids:
-                restaurants.append(sr)
+        # No cache and no API key — fall back to all restaurants in DB within range
+        all_restaurants = db.query(Restaurant).all()
+        restaurants = [
+            r for r in all_restaurants
+            if _haversine_km(lat, lng, r.lat, r.lng) * 1000 <= radius
+        ]
+        source = "db"
 
     # Apply filters
     results = []
@@ -184,7 +174,7 @@ async def get_restaurant(
     # Try cache
     restaurant = get_cached_restaurant_detail(db, place_id)
 
-    if restaurant is None and not place_id.startswith("seed_"):
+    if restaurant is None:
         # Try fetching from Google
         api_key = os.getenv("GOOGLE_PLACES_API_KEY", "")
         if api_key:
@@ -194,7 +184,7 @@ async def get_restaurant(
                 restaurant = cached[0] if cached else None
 
     if restaurant is None:
-        # Try finding in DB without freshness check (for seed data)
+        # Fall back to DB lookup (covers swiggy_ records not in cache)
         restaurant = db.query(Restaurant).filter(Restaurant.place_id == place_id).first()
 
     if restaurant is None:
