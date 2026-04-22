@@ -59,7 +59,8 @@ class Dish(Base):
     name = Column(String, nullable=False)
     description = Column(Text, default="")
     price = Column(Float, nullable=False)
-    category = Column(String, default="Main Course")
+    category = Column(String, default="Other")
+    normalized_category = Column(String, default="Other")
     is_veg = Column(Boolean, default=False)
     is_vegan = Column(Boolean, default=False)
     cached_at = Column(DateTime, default=datetime.utcnow)
@@ -73,6 +74,7 @@ class Dish(Base):
             "description": self.description,
             "price": self.price,
             "category": self.category,
+            "normalized_category": self.normalized_category,
             "is_veg": self.is_veg,
             "is_vegan": self.is_vegan,
         }

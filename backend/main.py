@@ -19,7 +19,6 @@ from cache import (
 )
 from models import Base, Dish, Restaurant, Review, get_engine, get_session_factory
 from places import get_place_details, search_nearby
-from seed_data import seed_database
 
 load_dotenv()
 
@@ -38,7 +37,6 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
-    seed_database(engine)
     yield
 
 
@@ -104,22 +102,14 @@ async def list_restaurants(
                 restaurants = cache_restaurants(db, api_results)
                 source = "api"
 
-    # Always include seed data within range
-    all_restaurants = db.query(Restaurant).all()
-    seed_in_range = [
-        r for r in all_restaurants
-        if r.place_id.startswith("seed_") and _haversine_km(lat, lng, r.lat, r.lng) * 1000 <= radius
-    ]
-
     if restaurants is None:
-        restaurants = seed_in_range
-        source = "seed"
-    else:
-        # Merge seed data (avoid duplicates)
-        existing_ids = {r.place_id for r in restaurants}
-        for sr in seed_in_range:
-            if sr.place_id not in existing_ids:
-                restaurants.append(sr)
+        # No cache and no API key — fall back to all restaurants in DB within range
+        all_restaurants = db.query(Restaurant).all()
+        restaurants = [
+            r for r in all_restaurants
+            if _haversine_km(lat, lng, r.lat, r.lng) * 1000 <= radius
+        ]
+        source = "db"
 
     # Apply filters
     results = []
@@ -184,7 +174,7 @@ async def get_restaurant(
     # Try cache
     restaurant = get_cached_restaurant_detail(db, place_id)
 
-    if restaurant is None and not place_id.startswith("seed_"):
+    if restaurant is None:
         # Try fetching from Google
         api_key = os.getenv("GOOGLE_PLACES_API_KEY", "")
         if api_key:
@@ -194,7 +184,7 @@ async def get_restaurant(
                 restaurant = cached[0] if cached else None
 
     if restaurant is None:
-        # Try finding in DB without freshness check (for seed data)
+        # Fall back to DB lookup (covers swiggy_ records not in cache)
         restaurant = db.query(Restaurant).filter(Restaurant.place_id == place_id).first()
 
     if restaurant is None:
@@ -280,6 +270,62 @@ async def list_dishes(
         "dishes": dishes,
         "count": len(dishes),
     }
+
+
+# --- Group Recommender ---
+# Thin route: validates params, builds RecommendRequest, delegates to recommender/
+
+from recommender import recommend as _recommend_engine, RecommendRequest, BudgetPolicy
+
+@app.get("/api/recommend")
+async def recommend(
+    lat: float = Query(...),
+    lng: float = Query(...),
+    radius: float = Query(15000),
+    budget_per_person: float = Query(..., description="Per-person budget in INR"),
+    people: int = Query(..., ge=1, le=20),
+    group_dietary: str = Query("", description="Comma-separated dietary per person, e.g. veg,non-veg,veg"),
+    cuisine: str = Query("", description="Comma-separated cuisine preferences"),
+    dish_category: str = Query("", description="Comma-separated normalized_category filters"),
+    meal_time: str = Query("lunch", description="lunch | dinner | anytime"),
+    want_starters: bool = Query(False, description="Include shared starters if budget allows"),
+    want_desserts: bool = Query(False, description="Include per-person desserts if budget allows"),
+    budget_policy: str = Query("strict", description="strict | flexible | generous"),
+    priority: str = Query("rating", description="rating | distance | variety | value"),
+    mode: str = Query("same_restaurant", description="same_restaurant | best_per_person"),
+    db: Session = Depends(get_db),
+):
+    # Parse per-person dietary list; pad/truncate to `people` length
+    raw_diets = [d.strip().lower() for d in group_dietary.split(",") if d.strip()]
+    person_diets = (raw_diets + ["any"] * people)[:people]
+
+    req = RecommendRequest(
+        people=people,
+        person_diets=person_diets,
+        lat=lat,
+        lng=lng,
+        radius_m=radius,
+        budget_per_person=budget_per_person,
+        budget_policy=BudgetPolicy.from_name(budget_policy),
+        meal_time=meal_time,
+        want_starters=want_starters,
+        want_desserts=want_desserts,
+        cuisine_filters=[c.strip().lower() for c in cuisine.split(",") if c.strip()],
+        category_filters=[c.strip() for c in dish_category.split(",") if c.strip()],
+        priority=priority,
+        mode=mode,
+    )
+
+    all_restaurants = db.query(Restaurant).all()
+    nearby = [
+        r for r in all_restaurants
+        if _haversine_km(lat, lng, r.lat, r.lng) * 1000 <= radius
+    ]
+
+    def distance_fn(r):
+        return _haversine_km(lat, lng, r.lat, r.lng)
+
+    return _recommend_engine(req, nearby, distance_fn)
 
 
 # --- Reviews ---
